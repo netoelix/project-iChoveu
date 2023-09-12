@@ -1,4 +1,7 @@
-import { searchCities } from './weatherAPI';
+import { searchCities, getWeatherByCity } from './weatherAPI';
+
+// const token = import.meta.env.VITE_TOKEN;
+const token = 'ef9ddd9f276b4299987223454231109';
 
 /**
  * Cria um elemento HTML com as informações passadas
@@ -76,8 +79,30 @@ export function showForecast(forecastList) {
 /**
  * Recebe um objeto com as informações de uma cidade e retorna um elemento HTML
  */
+const createButton = (url) => {
+  const newButton = createElement('button', 'city-forecast-button', 'Ver previsão');
+
+  newButton.addEventListener('click', async () => {
+    const apiFetch = await fetch(url);
+    const jsonReturn = await apiFetch.json();
+    const { forecastday } = jsonReturn.forecast;
+
+    const duringTheWeek = forecastday.map(({ date, day }) => ({
+      date,
+      maxTemp: day.maxtemp_c,
+      minTemp: day.mintemp_c,
+      condition: day.condition.text,
+      icon: day.condition.icon,
+    }));
+
+    showForecast(duringTheWeek);
+  });
+
+  return newButton;
+};
 export function createCityElement(cityInfo) {
-  const { name, country, temp, condition, icon /* , url */ } = cityInfo;
+  const { name, country, temp, condition, icon, url } = cityInfo;
+  const api = `http://api.weatherapi.com/v1/forecast.json?lang=pt&key=${token}&q=${url}&days=7`;
 
   const cityElement = createElement('li', 'city');
 
@@ -103,6 +128,7 @@ export function createCityElement(cityInfo) {
 
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
+  cityElement.appendChild(createButton(api));
 
   return cityElement;
 }
@@ -110,12 +136,23 @@ export function createCityElement(cityInfo) {
 /**
  * Lida com o evento de submit do formulário de busca
  */
-export function handleSearch(event) {
+
+const createLi = (url) => {
+  const ul = document.querySelector('#cities');
+
+  ul.appendChild(createCityElement(url));
+};
+
+export async function handleSearch(event) {
   event.preventDefault();
   clearChildrenById('cities');
 
   const searchInput = document.getElementById('search-input');
   const searchValue = searchInput.value;
   searchCities(searchValue);
-  // seu código aqui
+  const resultCity = await searchCities(searchValue);
+  const resultLink = resultCity.map(({ url }) => getWeatherByCity(url));
+
+  Promise.all(resultLink)
+    .then((cities) => cities.forEach((city) => createLi(city)));
 }
