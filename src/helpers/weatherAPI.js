@@ -1,5 +1,4 @@
-// const token = import.meta.env.VITE_TOKEN;
-const token = 'ef9ddd9f276b4299987223454231109';
+const token = import.meta.env.VITE_TOKEN;
 
 export async function searchCities(term) {
   const city = await fetch(`http://api.weatherapi.com/v1/search.json?key=${token}&q=${term}`)

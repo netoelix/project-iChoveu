@@ -1,7 +1,6 @@
 import { searchCities, getWeatherByCity } from './weatherAPI';
 
-// const token = import.meta.env.VITE_TOKEN;
-const token = 'ef9ddd9f276b4299987223454231109';
+const token = import.meta.env.VITE_TOKEN;
 
 /**
  * Cria um elemento HTML com as informações passadas
